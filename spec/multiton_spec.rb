@@ -18,7 +18,7 @@ describe Multiton do
       expect(a).to eq(b)
     end
 
-    it "created instance survives GC work" do
+    it "returns an instance that survives GC work" do
       a = A.create(:some_id)
       a_oid = a.object_id
       a = nil
