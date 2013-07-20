@@ -35,6 +35,12 @@ describe Multiton do
     end
   end
 
+  describe '#[]' do
+    it "is an alias to #create" do
+      expect(A.create(:some_id)).to eq(A[:some_id])
+    end
+  end
+
   it "creates instance for given ID on demand" do
     expect(ObjectSpace.each_object(A){}).to eq(0)
     A.create(:some_id)

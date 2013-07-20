@@ -75,6 +75,10 @@ class Multiton
         @multiton__instances__[id]
       end
 
+      def klass.[](id)
+        create id
+      end
+
       klass
     end
   end
