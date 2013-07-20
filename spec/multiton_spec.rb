@@ -1,4 +1,5 @@
 require_relative '../multiton'
+require 'pp'
 
 describe Multiton do
   before :each do
@@ -38,6 +39,41 @@ describe Multiton do
   describe '#[]' do
     it "is an alias to #create" do
       expect(A.create(:some_id)).to eq(A[:some_id])
+    end
+  end
+
+  describe '#each' do
+    it "behaves like Hash#each" do
+      ids = ('a'..'z').to_a
+      ids.map {|x| A.create(x)}
+      a = []
+
+      A.each do |k, v|
+        expect(ids).to include(k)
+        expect(ids).to include(v.id)
+        a << v.id
+      end
+      expect(a).to eq(ids)
+    end
+
+    it "is immune to modifications" do
+      ids = ('a'..'z').to_a
+      objs = ids.map {|x| A.create(x)}
+      a = []
+      h = {}
+
+      A.each do |k, v|
+        a << v
+        id = '_' + v.id + '_'
+        h[id] = A.create(id)
+      end
+      expect(a).to eq(objs)
+
+      ids.each do |i|
+        id = '_' + i + '_'
+        o = A.create(id)
+        expect(o).to eq(h[id])
+      end
     end
   end
 

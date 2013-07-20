@@ -75,6 +75,14 @@ class Multiton
         @multiton__instances__[id]
       end
 
+      def klass.each(*args, &block)
+        __instances__ = nil
+        @singleton__mutex__.synchronize {
+          __instances__ = @multiton__instances__.clone
+        }
+        __instances__.each *args, &block
+      end
+
       def klass.[](id)
         create id
       end
