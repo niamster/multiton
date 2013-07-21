@@ -34,11 +34,40 @@ describe Multiton do
       a, b = A.create(:some_id), B.create(:some_id)
       expect(a).not_to eq(b)
     end
+
+    it "accepts additional arguments" do
+      class B < Multiton
+        attr_reader :arg
+
+        def initialize(arg)
+          @arg = arg
+        end
+      end
+      b = B.create(:some_id, :arg)
+      expect(b.arg).to eq(:arg)
+    end
+
+    it "accepts block argument" do
+      class B < Multiton
+        attr_reader :arg
+
+        def initialize(arg)
+          @arg = arg
+          yield @arg.to_s if block_given?
+        end
+      end
+      b = B.create(:some_id, :arg) do |arg|
+        expect(arg.to_sym).to eq(:arg)
+      end
+    end
   end
 
   describe '#[]' do
-    it "is an alias to #create" do
+    it "acts as an alias to #create w/o passing additional arguments" do
       expect(A.create(:some_id)).to eq(A[:some_id])
+      expect {
+        A[:some_id, 0]
+      }.to raise_error(ArgumentError)
     end
   end
 

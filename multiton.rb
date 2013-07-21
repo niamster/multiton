@@ -66,11 +66,11 @@ class Multiton
         raise TypeError, "can't inherit from of multiton class #{self.class}"
       end
 
-      def klass.create(id)
+      def klass.create(id, *args, &blk)
         return @multiton__instances__[id] if @multiton__instances__[id]
         @singleton__mutex__.synchronize {
           return @multiton__instances__[id] if @multiton__instances__[id]
-          @multiton__instances__[id] = new(id)
+          @multiton__instances__[id] = new(id, *args, &blk)
         }
         @multiton__instances__[id]
       end
