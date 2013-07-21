@@ -114,6 +114,14 @@ describe Multiton do
     end
   end
 
+  describe '#to_a' do
+    it "returns an array of available instances" do
+      ids = ('a'..'z').to_a
+      objs = ids.map {|x| A.create(x)}
+      expect(A.to_a).to eq(objs)
+    end
+  end
+
   it "creates instance for given ID on demand" do
     expect(ObjectSpace.each_object(A){}).to eq(0)
     A.create(:some_id)
