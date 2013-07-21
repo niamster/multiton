@@ -89,11 +89,11 @@ class Multiton
         __instances__.each *args, &block
       end
 
-      # def klass.to_a
-      #   instances = []
-      #   each { |k, v| instances << v }
-      #   instances
-      # end
+      def klass.to_a
+        instances = []
+        each { |k, v| instances << v }
+        instances
+      end
 
       def klass.[](id)
         create id
