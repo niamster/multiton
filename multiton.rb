@@ -75,6 +75,12 @@ class Multiton
         @multiton__instances__[id]
       end
 
+      def klass.destroy(id)
+        @singleton__mutex__.synchronize {
+          return @multiton__instances__.delete id
+        }
+      end
+
       def klass.each(*args, &block)
         __instances__ = nil
         @singleton__mutex__.synchronize {

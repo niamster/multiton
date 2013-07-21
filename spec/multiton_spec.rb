@@ -62,6 +62,14 @@ describe Multiton do
     end
   end
 
+  describe '#destroy' do
+    it "removes the instance from the cache" do
+      a = A[:some_id]
+      A.destroy :some_id
+      expect(a).not_to eq(A[:some_id])
+    end
+  end
+
   describe '#[]' do
     it "acts as an alias to #create w/o passing additional arguments" do
       expect(A.create(:some_id)).to eq(A[:some_id])
