@@ -1,13 +1,14 @@
-require "singleton"
+require 'thread'
 
-# The Multiton class extends Singleton module to collection level
+# The Multiton class extends Singleton Pattern to collection level
 # The main purpose is to have a collection of sole instanses of a particular class
 # Possible application: a cache mapped to some DB
 #
 # == Usage
 #
-# To use Multiton, inherit it in your class
-#   class Klass < Multiton
+# To use Multiton, include it in your class
+#   class Klass
+#     include Multiton
 #     # ...
 #   end
 #
@@ -21,8 +22,9 @@ require "singleton"
 #   # => true
 #
 # Before the call to Klass.initialize, instance variable @id is assigned to <ID> obtained from Klass.create
-#   class Klass < Multiton
-#     attr_reader :id
+#   class Klass
+#     include Multiton
+#     attr_reader :ID
 #
 #     def initialize
 #       @ID = @id
@@ -35,19 +37,26 @@ require "singleton"
 #   a.ID == :id
 #   # => true
 #
-# The class Klass that inherits Multiton is final,
-# i.e. it's not possible to derive from a Klass anymore
-#
-class Multiton
-  include Singleton
-
+module Multiton
   attr_reader :id
 
-  class << Singleton
+  def clone
+    raise TypeError, "can't clone instance of singleton #{self.class}"
+  end
+
+  def dup
+    raise TypeError, "can't dup instance of singleton #{self.class}"
+  end
+
+  def _dump(depth = -1)
+    raise TypeError, "can't marshall instance of singleton #{self.class}"
+  end
+
+  class << self
     def __init__(klass)
       klass.instance_eval {
         @multiton__instances__ = {}
-        @singleton__mutex__ = Mutex.new
+        @multiton__mutex__ = Mutex.new
       }
 
       def klass.new(id, *args, &blk)
@@ -56,19 +65,15 @@ class Multiton
         o.instance_eval{initialize(*args, &blk)}
         o
       end
-      klass.private_class_method :new
-
-      def klass.instance
-        raise TypeError, "can't create a single instance of multiton #{self}"
-      end
 
       def klass.inherited(sub)
-        raise TypeError, "can't inherit from of multiton class #{self.class}"
+        super
+        Multiton.__init__(sub)
       end
 
       def klass.create(id, *args, &blk)
         return @multiton__instances__[id] if @multiton__instances__[id]
-        @singleton__mutex__.synchronize {
+        @multiton__mutex__.synchronize {
           return @multiton__instances__[id] if @multiton__instances__[id]
           @multiton__instances__[id] = new(id, *args, &blk)
         }
@@ -76,14 +81,14 @@ class Multiton
       end
 
       def klass.destroy(id)
-        @singleton__mutex__.synchronize {
+        @multiton__mutex__.synchronize {
           return @multiton__instances__.delete id
         }
       end
 
       def klass.each(*args, &block)
         __instances__ = nil
-        @singleton__mutex__.synchronize {
+        @multiton__mutex__.synchronize {
           __instances__ = @multiton__instances__.clone
         }
         __instances__.each *args, &block
@@ -100,6 +105,25 @@ class Multiton
       end
 
       klass
+    end
+
+    private
+
+    # extending an object with Multiton is a bad idea
+    undef_method :extend_object
+
+    def append_features(mod)
+      #  help out people counting on transitive mixins
+      unless mod.instance_of?(Class)
+        raise TypeError, "Inclusion of the Multiton module in module #{mod}"
+      end
+      super
+    end
+
+    def included(klass)
+      super
+      Multiton.__init__(klass)
+      klass.private_class_method :new, :allocate, :inherited
     end
   end
 end

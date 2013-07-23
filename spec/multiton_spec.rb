@@ -3,7 +3,8 @@ require 'pp'
 
 describe Multiton do
   before :each do
-    class A < Multiton
+    class A
+      include Multiton
     end
   end
 
@@ -29,14 +30,16 @@ describe Multiton do
     end
 
     it "never collides on IDs for different classes" do
-      class B < Multiton
+      class B
+        include Multiton
       end
       a, b = A.create(:some_id), B.create(:some_id)
       expect(a).not_to eq(b)
     end
 
     it "accepts additional arguments" do
-      class B < Multiton
+      class B
+        include Multiton
         attr_reader :arg
 
         def initialize(arg)
@@ -48,7 +51,8 @@ describe Multiton do
     end
 
     it "accepts block argument" do
-      class B < Multiton
+      class B
+        include  Multiton
         attr_reader :arg
 
         def initialize(arg)
@@ -128,28 +132,50 @@ describe Multiton do
     expect(ObjectSpace.each_object(A){}).to eq(1)
   end
 
-  it "impossible to inherit Multiton-derived class" do
+  it "Multiton-derived class produces new objecs" do
+    class B < A
+    end
+    expect(A[:some_id]).not_to eq(B[:some_id])
+  end
+
+  it "impossible to extend with Multiton" do
     expect {
-      class B < A
+      class B
+        extend Multiton
       end
     }.to raise_error
   end
 
-  it "impossible to create an instance with Multiton.new" do
+  it "impossible to include module that already includes Multiton" do
+    expect {
+      class B
+        include A
+      end
+    }.to raise_error
+  end
+
+  it "impossible to create an instance with #new" do
     expect {
       a = A.new :some_id
     }.to raise_error
   end
 
-  it "impossible to access #instance of included Singleton module" do
+  it "impossible to clone the instance" do
     expect {
-      a = A.instance
+      a = A.create(:some_id).clone
+    }.to raise_error
+  end
+
+  it "impossible to dup the instance" do
+    expect {
+      a = A.create(:some_id).dup
     }.to raise_error
   end
 
   describe '@id' do
     it "instance variable @id is available before the call to #initialize" do
-      class B < Multiton
+      class B
+        include Multiton
         attr_reader :local_id
         def initialize
           @local_id = @id
