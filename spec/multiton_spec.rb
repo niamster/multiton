@@ -74,6 +74,14 @@ describe Multiton do
     end
   end
 
+  describe '#has_key?' do
+    it "returns true if instance for the given key is present in collection" do
+      A[:some_id]
+      expect(A.has_key? :some_id).to be_true
+      expect(A.has_key? :some_other_id).to be_false
+    end
+  end
+
   describe '#[]' do
     it "acts as an alias to #create w/o passing additional arguments" do
       expect(A.create(:some_id)).to eq(A[:some_id])

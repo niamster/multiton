@@ -86,6 +86,10 @@ module Multiton
         }
       end
 
+      def klass.has_key?(id)
+        @multiton__instances__.has_key? id
+      end
+
       def klass.each(*args, &block)
         __instances__ = nil
         @multiton__mutex__.synchronize {
