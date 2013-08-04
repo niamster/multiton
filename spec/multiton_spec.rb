@@ -1,4 +1,4 @@
-require_relative '../multiton'
+require_relative '../lib/multiton'
 require 'pp'
 
 describe Multiton do
